@@ -7,6 +7,7 @@ namespace makerbit {
         }
 
         let _jobs: Job[] = undefined;
+        let _pause: number = 100;
 
         function loop() {
             let previous = control.millis();
@@ -27,7 +28,7 @@ namespace makerbit {
                     _jobs.removeElement(interval);
                 })
 
-                basic.pause(15);
+                basic.pause(_pause);
             }
         }
 
@@ -46,6 +47,11 @@ namespace makerbit {
                 this.delay = delay;
                 this.remaining = delay;
                 this.mode = mode;
+
+                if (delay > 0 && delay < _pause) {
+                    _pause = Math.floor(delay);
+                }
+
                 _jobs.push(this);
             }
 
