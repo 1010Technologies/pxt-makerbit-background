@@ -1,0 +1,17 @@
+{
+    "name": "background",
+    "version": "0.0.1",
+    "description": "Single thread background scheduler",
+    "license": "MIT",
+    "dependencies": {
+        "core": "*"
+    },
+    "files": [
+        "README.md",
+        "background.ts"
+    ],
+    "testFiles": [
+        "test.ts"
+    ],
+    "public": true
+}
