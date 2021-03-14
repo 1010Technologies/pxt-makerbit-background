@@ -10,5 +10,5 @@ const cancelId = makerbit.background.schedule(() => {
     basic.showNumber(3)
 }, 10000, makerbit.background.Mode.Repeat);
 
-makerbit.background.clear(cancelId, makerbit.background.Mode.Repeat)
+makerbit.background.remove(cancelId);
 

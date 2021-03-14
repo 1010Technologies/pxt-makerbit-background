@@ -86,15 +86,15 @@ namespace makerbit {
                 _jobs = [];
                 control.runInParallel(loop);
             }
-            const interval = new Job(func, delay, mode);
-            return interval.id;
+            const job = new Job(func, delay, mode);
+            return job.id;
         }
 
-        export function clear(intervalId: number, mode: Mode): void {
+        export function remove(intervalId: number): void {
             if (!_jobs) return;
             for (let i = 0; i < _jobs.length; ++i) {
                 const it = _jobs[i];
-                if (it.id == intervalId && it.mode == mode) {
+                if (it.id == intervalId) {
                     it.cancel();
                     break;
                 }
