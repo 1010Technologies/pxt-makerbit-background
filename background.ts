@@ -11,27 +11,27 @@ namespace makerbit {
 
         function loop() {
             let previous = control.millis();
-            let _toBeDeleted: Job[] = []
 
             while (true) {
+                const toBeDeleted: Job[] = [];
+
                 const now = control.millis();
                 const delta = now - previous;
                 previous = now;
 
                 _jobs.forEach(function (interval: Job, index: number) {
                     if (interval.run(delta)) {
-                        _toBeDeleted.push(interval);
+                        toBeDeleted.push(interval);
                     }
                 })
 
-                _toBeDeleted.forEach(function (interval: Job, index: number) {
+                toBeDeleted.forEach(function (interval: Job, index: number) {
                     _jobs.removeElement(interval);
                 })
 
                 basic.pause(_pause);
             }
         }
-
 
         class Job {
             id: number;
