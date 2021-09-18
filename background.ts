@@ -2,54 +2,76 @@
 //% category="MakerBit"
 namespace makerbit {
     export namespace background {
+
+        export enum Thread {
+            Priority = 0,
+            UserCallback = 1,
+        }
+
         export enum Mode {
             Repeat,
             Once,
         }
+        class Executor {
+            _newJobs: Job[] = undefined;
+            _jobsToCancel: number[] = undefined;
+            _pause: number = 1000;
 
-        let _newJobs: Job[] = undefined;
-        let _jobsToCancel: number[] = undefined;
-        let _pause: number = 100;
-        let _maxJobId = -1;
+            constructor(type: Thread) {
+                this._newJobs = [];
+                this._jobsToCancel = [];
+                control.runInParallel(() => this.loop());
+            }
 
-        function loop() {
-            const _jobs: Job[] = [];
+            push(task: () => void, delay: number, mode: Mode): number {
+                const job = new Job(task, delay, mode);
+                this._newJobs.push(job);
+                if (delay > 0 && delay < this._pause) {
+                    this._pause = Math.floor(delay);
+                }
+                return job.id;
+            }
 
-            let previous = control.millis();
+            cancel(jobId: number) {
+                this._jobsToCancel.push(jobId);
+            }
 
-            while (true) {
-                const now = control.millis();
-                const delta = now - previous;
-                previous = now;
+            loop(): void {
+                const _jobs: Job[] = [];
 
-                // Add new jobs
-                _newJobs.forEach(function (job: Job, index: number) {
-                    _jobs.push(job);
-                });
-                _newJobs = [];
+                let previous = control.millis();
 
-                // Cancel jobs
-                _jobsToCancel.forEach(function (jobId: number, index: number) {
-                    for (let i = 0; i < _jobs.length; ++i) {
-                        const job = _jobs[i];
-                        if (job.id == jobId) {
+                while (true) {
+                    const now = control.millis();
+                    const delta = now - previous;
+                    previous = now;
+
+                    // Add new jobs
+                    this._newJobs.forEach(function (job: Job, index: number) {
+                        _jobs.push(job);
+                    });
+                    this._newJobs = [];
+
+                    // Cancel jobs
+                    this._jobsToCancel.forEach(function (jobId: number, index: number) {
+                        for (let i = _jobs.length - 1; i >= 0; i--) {
+                            const job = _jobs[i];
+                            if (job.id == jobId) {
+                                _jobs.removeAt(i);
+                                break;
+                            }
+                        }
+                    });
+
+                    // Execute all jobs, newest first
+                    for (let i = _jobs.length - 1; i >= 0; i--) {
+                        if (_jobs[i].run(delta)) {
                             _jobs.removeAt(i);
-                            break;
                         }
                     }
-                });
 
-                // Get maximum job Id
-                _maxJobId = _jobs.length == 0 ? 0 : _jobs[_jobs.length - 1].id;
-
-                // Execute newest jobs first
-                for (let i = _jobs.length - 1; i >= 0; i--) {
-                    if (_jobs[i].run(delta)) {
-                        _jobs.removeAt(i);
-                    }
+                    basic.pause(this._pause);
                 }
-
-                basic.pause(_pause);
             }
         }
 
@@ -61,15 +83,11 @@ namespace makerbit {
             mode: Mode;
 
             constructor(func: () => void, delay: number, mode: Mode) {
-                this.id = ++_maxJobId;
+                this.id = randint(0, 2147483647)
                 this.func = func;
                 this.delay = delay;
                 this.remaining = delay;
                 this.mode = mode;
-
-                if (delay > 0 && delay < _pause) {
-                    _pause = Math.floor(delay);
-                }
             }
 
             run(delta: number): boolean {
@@ -101,26 +119,27 @@ namespace makerbit {
             }
         }
 
+        let queues: Executor[];
+
         export function schedule(
             func: () => void,
+            type: Thread,
+            mode: Mode,
             delay: number,
-            mode: Mode
         ): number {
             if (!func || delay < 0) return 0;
-            if (_maxJobId == -1) {
-                _maxJobId = 0;
-                _newJobs = [];
-                _jobsToCancel = [];
-                control.runInParallel(loop);
+
+            if (!queues[type]) {
+                queues[type] = new Executor(type);
             }
-            const job = new Job(func, delay, mode);
-            _newJobs.push(job);
-            return job.id;
+
+            return queues[type].push(func, delay, mode);
         }
 
-        export function remove(jobId: number): void {
-            if (_maxJobId == -1) return;
-            _jobsToCancel.push(jobId);
+        export function remove(type: Thread, jobId: number): void {
+            if (queues[type]) {
+                queues[type].cancel(jobId);
+            }
         }
     }
 }
