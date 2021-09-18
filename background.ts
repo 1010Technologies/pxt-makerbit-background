@@ -15,14 +15,14 @@ namespace makerbit {
 
         class Executor {
             _newJobs: Job[] = undefined;
-            _jobsToCancel: number[] = undefined;
+            _jobsToRemove: number[] = undefined;
             _pause: number = 1000;
             _type: Thread;
 
             constructor(type: Thread) {
                 this._type = type;
                 this._newJobs = [];
-                this._jobsToCancel = [];
+                this._jobsToRemove = [];
                 control.runInParallel(() => this.loop());
             }
 
@@ -36,7 +36,7 @@ namespace makerbit {
             }
 
             cancel(jobId: number) {
-                this._jobsToCancel.push(jobId);
+                this._jobsToRemove.push(jobId);
             }
 
             loop(): void {
@@ -56,7 +56,7 @@ namespace makerbit {
                     this._newJobs = [];
 
                     // Cancel jobs
-                    this._jobsToCancel.forEach(function (jobId: number, index: number) {
+                    this._jobsToRemove.forEach(function (jobId: number, index: number) {
                         for (let i = _jobs.length - 1; i >= 0; i--) {
                             const job = _jobs[i];
                             if (job.id == jobId) {
@@ -65,24 +65,25 @@ namespace makerbit {
                             }
                         }
                     });
+                    this._jobsToRemove = []
+
 
                     // Execute all jobs
                     if (this._type === Thread.Priority) {
                         // newest first
                         for (let i = _jobs.length - 1; i >= 0; i--) {
                             if (_jobs[i].run(delta)) {
-                                _jobs.removeAt(i);
+                                this._jobsToRemove.push(_jobs[i].id)
                             }
                         }
                     } else {
                         // Execute in order of schedule
                         for (let i = 0; i < _jobs.length; i++) {
                             if (_jobs[i].run(delta)) {
-                                _jobs.removeAt(i);
+                                this._jobsToRemove.push(_jobs[i].id)
                             }
                         }
                     }
-
 
                     basic.pause(this._pause);
                 }
@@ -157,3 +158,4 @@ namespace makerbit {
         }
     }
 }
+
