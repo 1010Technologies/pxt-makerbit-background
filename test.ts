@@ -13,7 +13,7 @@ makerbit.background.schedule(
     makerbit.background.Thread.Priority,
     makerbit.background.Mode.Once,
     1000
-    );
+);
 
 const cancelId = makerbit.background.schedule(
     () => {
@@ -22,7 +22,7 @@ const cancelId = makerbit.background.schedule(
     makerbit.background.Thread.UserCallback,
     makerbit.background.Mode.Repeat,
     10000
-    );
+);
 
 makerbit.background.remove(makerbit.background.Thread.UserCallback, cancelId);
 

@@ -12,6 +12,7 @@ namespace makerbit {
             Repeat,
             Once,
         }
+
         class Executor {
             _newJobs: Job[] = undefined;
             _jobsToCancel: number[] = undefined;
@@ -119,7 +120,7 @@ namespace makerbit {
             }
         }
 
-        let queues: Executor[];
+        const queues: Executor[] = [];
 
         export function schedule(
             func: () => void,
