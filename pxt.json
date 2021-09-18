@@ -1,6 +1,6 @@
 {
     "name": "background",
-    "version": "0.0.9",
+    "version": "0.0.10",
     "description": "Single thread background scheduler",
     "license": "MIT",
     "dependencies": {
