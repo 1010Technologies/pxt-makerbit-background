@@ -17,8 +17,10 @@ namespace makerbit {
             _newJobs: Job[] = undefined;
             _jobsToCancel: number[] = undefined;
             _pause: number = 1000;
+            _type: Thread;
 
             constructor(type: Thread) {
+                this._type = type;
                 this._newJobs = [];
                 this._jobsToCancel = [];
                 control.runInParallel(() => this.loop());
@@ -64,12 +66,23 @@ namespace makerbit {
                         }
                     });
 
-                    // Execute all jobs, newest first
-                    for (let i = _jobs.length - 1; i >= 0; i--) {
-                        if (_jobs[i].run(delta)) {
-                            _jobs.removeAt(i);
+                    // Execute all jobs
+                    if (this._type === Thread.Priority) {
+                        // newest first
+                        for (let i = _jobs.length - 1; i >= 0; i--) {
+                            if (_jobs[i].run(delta)) {
+                                _jobs.removeAt(i);
+                            }
+                        }
+                    } else {
+                        // Execute in order of schedule
+                        for (let i = 0; i < _jobs.length; i++) {
+                            if (_jobs[i].run(delta)) {
+                                _jobs.removeAt(i);
+                            }
                         }
                     }
+
 
                     basic.pause(this._pause);
                 }
