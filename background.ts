@@ -128,10 +128,6 @@ namespace makerbit {
                         }
                 }
             }
-
-            cancel() {
-                this.delay = -1;
-            }
         }
 
         const queues: Executor[] = [];
