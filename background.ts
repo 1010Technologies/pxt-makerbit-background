@@ -113,19 +113,14 @@ namespace makerbit {
 
                 switch (this.mode) {
                     case Mode.Once:
-                        if (this.delay >= 0) this.func();
+                        this.func();
                         basic.pause(0);
                         return true;
                     case Mode.Repeat:
-                        if (this.delay >= 0) {
-                            this.func();
-                            this.remaining = this.delay;
-                            basic.pause(0);
-                            return false;
-                        } else {
-                            // might have been cancelled during this duration
-                            return true;
-                        }
+                        this.func();
+                        this.remaining = this.delay;
+                        basic.pause(0);
+                        return false;
                 }
             }
         }
