@@ -16,7 +16,7 @@ namespace makerbit {
         class Executor {
             _newJobs: Job[] = undefined;
             _jobsToRemove: number[] = undefined;
-            _pause: number = 1000;
+            _pause: number = 100;
             _type: Thread;
 
             constructor(type: Thread) {
@@ -27,11 +27,11 @@ namespace makerbit {
             }
 
             push(task: () => void, delay: number, mode: Mode): number {
-                const job = new Job(task, delay, mode);
-                this._newJobs.push(job);
-                if (delay > 0 && delay < this._pause) {
+                if (delay > 0 && delay < this._pause && mode === Mode.Repeat) {
                     this._pause = Math.floor(delay);
                 }
+                const job = new Job(task, delay, mode);
+                this._newJobs.push(job);
                 return job.id;
             }
 
