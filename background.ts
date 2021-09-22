@@ -106,6 +106,10 @@ namespace makerbit {
             }
 
             run(delta: number): boolean {
+                if (delta <= 0) {
+                    return false;
+                }
+                
                 this.remaining -= delta;
                 if (this.remaining > 0) {
                     return false;
